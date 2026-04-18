@@ -1,0 +1,54 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const extensions = ref([]);
+
+// Fetch all installed extensions
+const loadExtensions = () => {
+  if (chrome.management) {
+    chrome.management.getAll((info) => {
+      // Filter out themes or the manager itself if desired
+      extensions.value = info.filter(ext => ext.type === 'extension');
+    });
+  } else {
+    console.error("Management API not available. Ensure 'management' permission is set.");
+  }
+};
+
+// Toggle extension state (Enable/Disable)
+const toggleExtension = (id, enabled) => {
+  chrome.management.setEnabled(id, !enabled, () => {
+    // Refresh the list to reflect changes
+    loadExtensions();
+  });
+};
+
+// Uninstall an extension
+const uninstallExtension = (id) => {
+  chrome.management.uninstall(id, { showConfirmDialog: true }, () => {
+    loadExtensions();
+  });
+};
+
+onMounted(loadExtensions);
+</script>
+
+<template>
+  <div class="extension-manager">
+    <h3>Installed Extensions</h3>
+    <ul>
+      <li v-for="ext in extensions" :key="ext.id">
+        <img :src="ext.icons?.[0]?.url" width="24" v-if="ext.icons" />
+        <span>{{ ext.name }}</span>
+        
+        <button @click="toggleExtension(ext.id, ext.enabled)">
+          {{ ext.enabled ? 'Disable' : 'Enable' }}
+        </button>
+        
+        <button @click="uninstallExtension(ext.id)" style="color: red;">
+          Uninstall
+        </button>
+      </li>
+    </ul>
+  </div>
+</template>
