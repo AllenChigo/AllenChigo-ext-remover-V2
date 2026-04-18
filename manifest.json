@@ -1,9 +1,0 @@
-{
-  "manifest_version": 3,
-  "name": "Vue Extension Manager",
-  "version": "1.0",
-  "permissions": ["management"],
-  "action": {
-    "default_popup": "index.html"
-  }
-}
